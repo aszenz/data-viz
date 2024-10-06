@@ -1,0 +1,46 @@
+:root {
+  color-scheme: light;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+#loader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+}
+
+#workspace-actions {
+  position: absolute;
+  display: flex;
+  gap: 0.5rem;
+  bottom: 2.5%;
+  right: 1.25%;
+  z-index: 1;
+}
+
+button,
+label:has(input[type="file"]) {
+  display: inline-block;
+  padding: 10px;
+  background: #ccc;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+button:hover,
+label:has(input[type="file"]):hover {
+  background: cornflowerblue;
+  color: white;
+}

@@ -1,0 +1,6 @@
+node_modules
+assets/build
+assets/data
+assets/config
+assets/data.json
+*.tsbuildinfo

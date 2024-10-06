@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no"
+    />
+    <title>DataViz</title>
+    <link rel="stylesheet" href="/build/index.css" />
+  </head>
+
+  <body>
+    <div id="loader">Loading...</div>
+    <div id="workspace-actions">
+      <label>
+        Add csv
+        <input
+          style="display: none"
+          type="file"
+          multiple
+          id="addDatasource"
+          accept="text/csv"
+        />
+      </label>
+      <button type="button" id="saveLayoutBtn">Save layout</button>
+      <button type="button" id="exportAsPDFBtn">Export as pdf</button>
+      <button type="button" id="exportAsExcelBtn">Export as excel</button>
+    </div>
+    <perspective-workspace id="workspace"></perspective-workspace>
+    <script type="module" src="/build/index.js"></script>
+  </body>
+</html>
