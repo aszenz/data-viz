@@ -88,7 +88,7 @@ $exportAsPDFBtn?.addEventListener("click", async () => {
   const { $typst } = await import(
     "@myriaddreamin/typst.ts/dist/esm/contrib/all-in-one-lite.mjs"
   );
-  $typst.setCompilerInitOptions({ getModule: () => `/build/${wasmFilename}` });
+  $typst.setCompilerInitOptions({ getModule: () => `./build/${wasmFilename}` });
   return withLoader($loader, async () => {
     const widgets = workspace.workspace.getAllWidgets();
     const dataTables = await Promise.all(
