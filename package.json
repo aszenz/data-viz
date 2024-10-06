@@ -27,7 +27,8 @@
     "start": "npm run build && http-server assets",
     "format": "prettier --write .",
     "check:formatting": "prettier --check .",
-    "check:types": "tsc -p tsconfig.json --noEmit"
+    "check:types": "tsc -p tsconfig.json --noEmit",
+    "check": "npm run check:formatting && npm check:types"
   },
   "prettier": {
     "tabWidth": 2
