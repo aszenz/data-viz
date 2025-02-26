@@ -12,7 +12,7 @@ export const buildOptions = {
   minify: false,
   splitting: true,
   bundle: true,
-  publicPath: '/build',
+  publicPath: "/build",
   assetNames: "[name]",
   format: "esm",
   sourcemap: true,
