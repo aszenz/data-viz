@@ -19,6 +19,13 @@ body {
   left: 50%;
   z-index: 1;
 }
+perspective-workspace {
+  left: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+}
 
 #workspace-actions {
   position: absolute;

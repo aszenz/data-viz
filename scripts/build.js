@@ -1,12 +1,10 @@
 import esbuild from "esbuild";
-import { PerspectiveEsbuildPlugin } from "@finos/perspective-esbuild-plugin";
 
 /**
  * @type esbuild.BuildOptions
  */
 export const buildOptions = {
   entryPoints: ["./src/index.ts", "./src/plot.ts"],
-  plugins: [PerspectiveEsbuildPlugin()],
   loader: {
     ".wasm": "file",
     ".typ": "text",
@@ -14,6 +12,7 @@ export const buildOptions = {
   minify: false,
   splitting: true,
   bundle: true,
+  publicPath: '/build',
   assetNames: "[name]",
   format: "esm",
   sourcemap: true,

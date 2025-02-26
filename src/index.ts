@@ -1,4 +1,11 @@
 import perspective, { type Table, type View } from "@finos/perspective";
+import perspective_viewer, {
+  type HTMLPerspectiveViewerElement,
+  ViewerConfigUpdate,
+} from "@finos/perspective-viewer";
+import PSP_SERVER_WASM from "@finos/perspective/dist/wasm/perspective-server.wasm?file";
+import PSP_CLIENT_WASM from "@finos/perspective-viewer/dist/wasm/perspective-viewer.wasm?file";
+// register web component
 import "@finos/perspective-workspace";
 import "@finos/perspective-workspace/dist/css/pro.css";
 import "@finos/perspective-viewer";
@@ -7,12 +14,23 @@ import "@finos/perspective-viewer-datagrid";
 import "@finos/perspective-viewer/dist/css/pro.css";
 import "./index.css";
 import "./summary/plugin";
-import type {
-  HTMLPerspectiveViewerElement,
-  ViewerConfigUpdate,
-} from "@finos/perspective-viewer";
-import wasmFilename from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?file";
-import pdfLayoutCode from "./pdf-layout.typ?text";
+import xlsxInit from "wasm-xlsxwriter/web";
+import XLSX_WASM from "wasm-xlsxwriter/web/wasm_xlsxwriter_bg.wasm?file";
+import TYPST_WASM from "@myriaddreamin/typst-ts-web-compiler/pkg/typst_ts_web_compiler_bg.wasm?file";
+import { $typst } from "@myriaddreamin/typst.ts/dist/esm/contrib/snippet.mjs";
+import toExcelFileBuffer from "./excel";
+import toPdf from "./pdf";
+
+console.log({ SERVER_WASM: PSP_SERVER_WASM, CLIENT_WASM: PSP_CLIENT_WASM });
+
+await Promise.all([
+  perspective.init_server(fetch(PSP_SERVER_WASM)),
+  perspective_viewer.init_client(fetch(PSP_CLIENT_WASM)),
+  xlsxInit({ module_or_path: XLSX_WASM }),
+  $typst.setCompilerInitOptions({
+    getModule: () => TYPST_WASM,
+  }),
+]);
 
 const $saveLayoutBtn = document.getElementById(
   "saveLayoutBtn",
@@ -49,7 +67,10 @@ $addDatasource?.addEventListener("change", ({ target }) => {
       [...(files ?? [])].map((file) => {
         const reader = new FileReader();
         reader.onload = function (fileLoadedEvent) {
-          let data = fileLoadedEvent.target?.result;
+          const data = fileLoadedEvent.target?.result ?? null;
+          if (null === data) {
+            return;
+          }
           workspace.addTable(file.name, worker.table(data));
           workspace.addViewer({ table: file.name });
         };
@@ -65,78 +86,51 @@ $addDatasource?.addEventListener("change", ({ target }) => {
 });
 $exportAsExcelBtn?.addEventListener("click", async () => {
   return withLoader($loader, async () => {
-    const XLSX = await import("xlsx/xlsx.mjs");
     const widgets = workspace.workspace.getAllWidgets();
-    const workbook = XLSX.utils.book_new();
-
-    await Promise.all(
-      widgets.map(async (widget) => {
-        const view = await widget.viewer.getView();
-        const data = await view.to_json();
-        const sheet = XLSX.utils.json_to_sheet(data);
-        const sheetName = widget.title.label
-          ?.slice(0, 20)
-          .replace(/[^a-z 0-9A-Z]/gi, "_");
-        XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
-      }),
+    const views = await Promise.all(
+      widgets.map(
+        async (widget) =>
+          [
+            widget.title.label ?? "",
+            (await widget.viewer.getView()) as View,
+          ] as const,
+      ),
     );
-
-    XLSX.writeFile(workbook, `${document.title}.xlsx`, { compression: true });
+    const viewsMap = Object.fromEntries(views);
+    const buffer = await toExcelFileBuffer(viewsMap);
+    // write this uint8 buffer to a new file
+    downloadFile(
+      new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }),
+      `${document.title}.xlsx`,
+    );
   });
 });
 $exportAsPDFBtn?.addEventListener("click", async () => {
-  const { $typst } = await import(
-    "@myriaddreamin/typst.ts/dist/esm/contrib/all-in-one-lite.mjs"
-  );
-  $typst.setCompilerInitOptions({ getModule: () => `./build/${wasmFilename}` });
   return withLoader($loader, async () => {
     const widgets = workspace.workspace.getAllWidgets();
-    const dataTables = await Promise.all(
-      widgets.map(async (widget) => {
-        const view = (await widget.viewer.getView()) as View;
-        const viewNumCols = await view.num_columns();
-        if (viewNumCols > 10) {
-          console.info(
-            `View has too many columns (${viewNumCols}), only 10 columns can be exported to PDF, deselect some columns`,
-          );
-        }
-        const viewNumRows = await view.num_rows();
-        if (viewNumRows > 10000) {
-          console.info(
-            `View has too many rows (${viewNumRows}), only 10k rows can be exported to PDF, filter the view`,
-          );
-        }
-
-        return view.to_json({
-          end_row: 10000,
-          end_col: 10,
-        });
-      }),
-    );
-    const encoder = new TextEncoder();
-    const listOfTables = JSON.stringify(dataTables);
-    await $typst.resetShadow();
-    await $typst.mapShadow("/assets/data.json", encoder.encode(listOfTables));
-    const pdfData = await $typst.pdf({ mainContent: pdfLayoutCode });
-    if (undefined === pdfData) {
-      return alert("Failed to generate PDF");
-    }
-    const pdfFile = new Blob([pdfData], { type: "application/pdf" });
-
-    // Create element with <a> tag
-    const link = document.createElement("a");
-
-    // Add file content in the object URL
-    link.href = URL.createObjectURL(pdfFile);
-
-    // Add file name
-    link.target = "_blank";
-
-    // Add click event to <a> tag to save file.
-    link.click();
-    URL.revokeObjectURL(link.href);
+    return withLoader($loader, async () => {
+      const views = await Promise.all(
+        widgets.map(
+          async (widget) =>
+            [
+              widget.title.label ?? "",
+              (await widget.viewer.getView()) as View,
+            ] as const,
+        ),
+      );
+      const viewsMap = Object.fromEntries(views);
+      const pdfFile = await toPdf({
+        views: viewsMap,
+        maxRowsPerView: 1000,
+        maxColsPerView: 10,
+      });
+      downloadFile(pdfFile, `${document.title}.pdf`);
+    });
   });
 });
+
 $loader.style.display = "none";
 
 async function withLoader($loader: HTMLDivElement, fn: Function) {
@@ -146,6 +140,14 @@ async function withLoader($loader: HTMLDivElement, fn: Function) {
   } finally {
     $loader.style.display = "none";
   }
+}
+
+function downloadFile(file: Blob, fileName: string): void {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(file);
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 
 interface PerspectiveWorkspace extends HTMLElement {
