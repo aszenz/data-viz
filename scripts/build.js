@@ -12,7 +12,7 @@ export const buildOptions = {
   minify: false,
   splitting: true,
   bundle: true,
-  publicPath: `${process.env.BASE_PUBLIC_PATH ?? '/'}build`,
+  publicPath: `${process.env.BASE_PUBLIC_PATH ?? "/"}build`,
   assetNames: "[name]",
   format: "esm",
   sourcemap: true,
