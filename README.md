@@ -2,6 +2,8 @@
 
 Inspect and visualize data from the browser
 
+https://aszenz.github.io/data-viz/
+
 ## Requirements
 
 - nodejs
