@@ -12,7 +12,6 @@
     "@myriaddreamin/typst-ts-web-compiler": "^0.5.4",
     "@myriaddreamin/typst.ts": "^0.5.4",
     "@uwdata/vgplot": "^0.13.0",
-    "@uwdata/vgplot": "^0.13.0",
     "dayjs": "^1.11.13",
     "wasm-xlsxwriter": "^0.8.0"
   },
