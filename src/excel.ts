@@ -4,6 +4,9 @@ import xlsxInit, { Workbook, Table, TableColumn } from "wasm-xlsxwriter/web";
 
 export default toExcelFileBuffer;
 
+/**
+ * TODO: Fix for grouped views
+ */
 async function toExcelFileBuffer(
   views: Record<string, View>,
 ): Promise<Uint8Array> {
@@ -27,6 +30,7 @@ async function toExcelFileBuffer(
         worksheet.writeColumn(
           dataRowIndexStart,
           index + dataColIndexStart,
+          // TODO: Fix for grouped views, this is not correct
           value as ExcelDataArray,
         );
       });
