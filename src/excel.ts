@@ -1,4 +1,5 @@
 import type { View } from "@finos/perspective";
+import { ExcelDataArray } from "wasm-xlsxwriter";
 import xlsxInit, { Workbook, Table, TableColumn } from "wasm-xlsxwriter/web";
 
 export default toExcelFileBuffer;
@@ -26,7 +27,7 @@ async function toExcelFileBuffer(
         worksheet.writeColumn(
           dataRowIndexStart,
           index + dataColIndexStart,
-          value,
+          value as ExcelDataArray,
         );
       });
       const rows = await view.num_rows();

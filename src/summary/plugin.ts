@@ -207,7 +207,8 @@
 import dayjs from "dayjs";
 import GLOBAL_STYLE from "./global.css?text";
 import { DEFAULT, MODERN, MINIMAL } from "./themes";
-import { View, ViewConfigUpdate } from "@finos/perspective";
+import { View } from "@finos/perspective";
+import { ViewConfigUpdate } from "@finos/perspective/dist/esm/ts-rs/ViewConfigUpdate.js";
 
 const _ALIGN_OPTIONS = ["horizontal", "vertical"];
 const _ALIGN_DEFAULT = "horizontal";
