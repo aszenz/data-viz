@@ -1,11 +1,11 @@
 import type { View } from "@finos/perspective";
-import { ExcelDataArray } from "wasm-xlsxwriter";
+import { ViewConfigUpdate } from "@finos/perspective/dist/esm/ts-rs/ViewConfigUpdate.js";
 import xlsxInit, { Workbook, Table, TableColumn } from "wasm-xlsxwriter/web";
 
 export default toExcelFileBuffer;
 
 /**
- * TODO: Fix for grouped views
+ * TODO: Add row/columns groups
  */
 async function toExcelFileBuffer(
   views: Record<string, View>,
@@ -21,21 +21,35 @@ async function toExcelFileBuffer(
       worksheet.setName(sheetName);
       const table = new Table();
       const data = (await view.to_columns()) as Record<string, Array<unknown>>;
+      const config = (await view.get_config()) as ViewConfigUpdate;
       const columns: TableColumn[] = [];
       const dataRowIndexStart = 2; // 3rd row;
       const dataColIndexStart = 1; // 2nd col;
-      Object.entries(data).forEach(([columnName, value], index) => {
-        const tblCol = new TableColumn().setHeader(columnName);
+      Object.entries(data).forEach(([columnName, colValues], index) => {
+        const isRowPath = "__ROW_PATH__" === columnName;
+        const tblCol = new TableColumn().setHeader(
+          config.group_by?.join(",") ?? columnName,
+        );
         columns.push(tblCol);
+        const ungroupedColValues = colValues.map((colVal) => {
+          // Is colVal a row path?
+          if (isRowPath && Array.isArray(colVal)) {
+            if (0 === colVal.length) {
+              return "TOTAL";
+            }
+            return colVal[colVal.length - 1];
+          }
+          return colVal;
+        });
         worksheet.writeColumn(
           dataRowIndexStart,
           index + dataColIndexStart,
-          // TODO: Fix for grouped views, this is not correct
-          value as ExcelDataArray,
+          ungroupedColValues,
         );
       });
       const rows = await view.num_rows();
-      const cols = await view.num_columns();
+      // note view.num_cols() excludes row path col when the view is grouped
+      const cols = ((await view.column_paths()) as string[]).length;
       const tbl = table.setName(sheetName).setColumns(columns);
       worksheet.addTable(
         dataRowIndexStart - 1,
