@@ -9,7 +9,7 @@
     "@finos/perspective-viewer-openlayers": "^3.4.3",
     "@finos/perspective-workspace": "^3.4.3",
     "@myriaddreamin/typst-ts-renderer": "^0.5.4",
-    "@myriaddreamin/typst-ts-web-compiler": "^0.5.4",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.6.0",
     "@myriaddreamin/typst.ts": "^0.5.4",
     "@uwdata/vgplot": "^0.15.0",
     "dayjs": "^1.11.13",
