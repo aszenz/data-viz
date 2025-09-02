@@ -13,7 +13,7 @@
     "@myriaddreamin/typst.ts": "^0.6.0",
     "@uwdata/vgplot": "^0.16.2",
     "dayjs": "^1.11.13",
-    "wasm-xlsxwriter": "^0.8.9"
+    "wasm-xlsxwriter": "^0.9.0"
   },
   "devDependencies": {
     "esbuild": "^0.25.5",
