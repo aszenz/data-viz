@@ -16,7 +16,7 @@
     "wasm-xlsxwriter": "^0.8.9"
   },
   "devDependencies": {
-    "esbuild": "^0.25.5",
+    "esbuild": "^0.25.9",
     "http-server": "^14.1.1",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3"
